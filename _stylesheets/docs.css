@@ -141,6 +141,12 @@ License: https://creativecommons.org/licenses/by/2.0/
 
 /* End footer edits */
 
+/* Clipboard */
+.clipboard-button {
+  width: 100px;
+  padding: 5px;
+  border: 1px black;
+}
 
 .fa-inverse:hover {
   color: #ccc;

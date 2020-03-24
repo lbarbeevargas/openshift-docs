@@ -95,6 +95,7 @@ on your computer, create one.
 For example, on a computer that uses a Linux operating system, run the
 following command:
 +
+[.clipboard-button]#Copy#
 ----
 $ ssh-keygen -t rsa -b 4096 -N '' \
     -f <path>/<file_name> <1>
