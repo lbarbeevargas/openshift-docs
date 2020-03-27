@@ -141,12 +141,23 @@ License: https://creativecommons.org/licenses/by/2.0/
 
 /* End footer edits */
 
-/* Clipboard */
+/* ClipboardJS */
 .clipboard-button {
-  width: 100px;
+  display: block;
+  width: 30px;
   padding: 5px;
-  border: 1px black;
+  border: 1px solid #C9C9C9;
+  text-align: center;
 }
+
+.fa-clipboard {
+  color: #C9C9C9;
+}
+
+.fa-check {
+  color: #73804E;
+}
+/* End ClipboardJS edits */
 
 .fa-inverse:hover {
   color: #ccc;
