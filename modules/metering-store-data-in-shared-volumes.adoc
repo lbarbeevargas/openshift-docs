@@ -5,38 +5,86 @@
 [id="metering-store-data-in-shared-volumes_{context}"]
 = Storing data in shared volumes
 
-[NOTE]
-====
-NFS is not recommended to use with metering.
-====
-
 Metering has no storage by default, but it can use any ReadWriteMany PersistentVolume or any StorageClass that provisions a ReadWriteMany PersistentVolume.
 
-.Procedure
-* To use a ReadWriteMany PersistentVolume for storage, modify the `shared-storage.yaml` file below.
+[NOTE]
+====
+NFS is not recommended to use in production. Using an NFS server on RHEL as storage backend can fail to meet metering requirements and to provide the performance that is needed for the Metering Operator to work appropriately.
 
+Other NFS implementations on the marketplace might not have these issues, such as a Parallel Network File System (pNFS). pNFS is an NFS implementation with distributed and parallel capability. Contact the individual NFS implementation vendor for more information on any testing that was possibly completed against {product-title} core components.
+====
+
+.Procedure
+You can use xref:../../storage/persistent_storage/persistent-storage-ocs.adoc#[Red Hat OpenShift Container Storage] as a ReadWriteMany PersistantVolume for the Metering Operator.
+
+.  Install the Red Hat OpenShift Container Storage Operator from OperatorHub.
+.  Modify the `shared-storage.yaml` file to use Red Hat OpenShift Container Storage:
++
 [source,yaml]
 ----
 apiVersion: metering.openshift.io/v1
 kind: MeteringConfig
 metadata:
-  name: "operator-metering"
+  name: openshift-metering
+  namespace: openshift-metering
 spec:
   storage:
-    type: "hive"
     hive:
       type: "sharedPVC"
       sharedPVC:
-        claimName: "metering-nfs" <1>
-        # uncomment the lines below to provision a new PVC using the specified <2>
-        # storageClass.
+        claimName: "metering-ocs" <1>
+        # uncomment the lines below to provision a new PVC using the specified storageClass. <2>
         # createPVC: true
-        # storageClass: "my-nfs-storage-class"
+        # storageClass: "ocs-storagecluster-cephfs"
         # size: 5Gi
+    type: hive
+  hive:
+    spec:
+      metastore:
+        storage:
+          class: "ocs-storagecluster-cephfs"
+          size: "5Gi"
+----
+<1> Set `storage.hive.sharedPVC.claimName` to the name of an existing ReadWriteMany PersistentVolumeClaim. This is necessary if you do not have dynamic volume provisioning or want to have more control over how the PersistentVolume is created.
+<2> Set `storage.hive.sharedPVC.createPVC` to `true` and set the `storage.hive.sharedPVC.storageClass` to the name of a StorageClass with ReadWriteMany access mode. This uses dynamic volume provisioning to create a volume automatically.
+
+.Verification
+
+.  Check for the Red Hat OpenShift Container Storage PersistentVolume in your cluster:
++
+[source,terminal]
+----
+$ oc get pv
+----
++
+.Example output
++
+[source,terminal]
+----
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                            STORAGECLASS                  REASON   AGE
+pvc-08e9785e-fb20-4562-97e0-7c3531fe2832   10Gi       RWO            Delete           Bound    openshift-storage/rook-ceph-mon-c                gp2                                    6h15m
+pvc-1ed294e4-1f93-4f2a-b595-242f0ec412d7   10Gi       RWO            Delete           Bound    openshift-storage/rook-ceph-mon-a                gp2                                    6h15m
+pvc-30a4a68d-bb02-4521-9c89-79e1d984472d   50Gi       RWO            Delete           Bound    openshift-storage/db-noobaa-db-0                 ocs-storagecluster-ceph-rbd            6h12m
+pvc-5279db56-52d3-446f-915c-0ea542af5fc9   2Ti        RWO            Delete           Bound    openshift-storage/ocs-deviceset-1-data-0-hplhp   gp2                                    6h13m
+pvc-546e8d2e-8c7b-4d2a-9251-dafad19dfd7e   5Gi        RWX            Delete           Bound    openshift-metering/hive-warehouse-data           ocs-storagecluster-cephfs              62m
+pvc-83a62cd6-c257-494f-97c0-1dc605c42e45   5Gi        RWO            Delete           Bound    openshift-metering/hive-metastore-db-data        ocs-storagecluster-cephfs              62m
+pvc-952eed6b-efc5-4667-b523-5756871df5e5   2Ti        RWO            Delete           Bound    openshift-storage/ocs-deviceset-2-data-0-jksh5   gp2                                    6h13m
+pvc-dd21e750-c746-47c7-8b73-e2eda553ae64   2Ti        RWO            Delete           Bound    openshift-storage/ocs-deviceset-0-data-0-cjfhq   gp2                                    6h13m
+pvc-dfe7c2b1-3e65-4c94-913b-8af8064666b3   10Gi       RWO            Delete           Bound    openshift-storage/rook-ceph-mon-b                gp2                                    6h15m
 ----
 
-Select one of the configuration options below:
-
-<1> Set `storage.hive.sharedPVC.claimName` to the name of an existing ReadWriteMany PersistentVolumeClaim (PVC). This is necessary if you do not have dynamic volume provisioning or want to have more control over how the PersistentVolume is created.
-
-<2> Set `storage.hive.sharedPVC.createPVC` to `true` and set the `storage.hive.sharedPVC.storageClass` to the name of a StorageClass with ReadWriteMany access mode. This will use dynamic volume provisioning to have a volume created automatically.
+. Check for the Red Hat OpenShift Container Storage PersistentVolumeClaims in your cluster:
++
+[source,terminal]
+----
+$ oc get pvc
+----
++
+.Example output
++
+[source,terminal]
+----
+NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                AGE
+hive-metastore-db-data   Bound    pvc-83a62cd6-c257-494f-97c0-1dc605c42e45   5Gi        RWO            ocs-storagecluster-cephfs   62m
+hive-warehouse-data      Bound    pvc-546e8d2e-8c7b-4d2a-9251-dafad19dfd7e   5Gi        RWX            ocs-storagecluster-cephfs   62m
+----
