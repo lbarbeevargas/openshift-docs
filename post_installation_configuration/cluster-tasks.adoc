@@ -52,7 +52,18 @@ xref:../machine_management/creating_machinesets/creating-machineset-aws.html#mac
 by adding SpotMarketOptions to the MachineSet YAML file.
 
 include::modules/machineset-yaml-azure.adoc[leveloffset=+3]
+
+Azure MachineSets support non-guaranteed xref:../machine_management/creating_machinesets/creating-machineset-azure.html#machineset-non-guaranteed-instance_creating-machineset-azure[Spot VMs],
+which can save you on costs compared to standard VM prices. You can
+xref:../machine_management/creating_machinesets/creating-machineset-azure.html#machineset-creating-non-guaranteed-instance_creating-machineset-azure[configure Spot VMs]
+by adding SpotVMOptions to the MachineSet YAML file.
+
 include::modules/machineset-yaml-gcp.adoc[leveloffset=+3]
+
+GCP MachineSets support non-guaranteed xref:../machine_management/creating_machinesets/creating-machineset-gcp.html#machineset-non-guaranteed-instance_creating-machineset-gcp[preemptible VM instances],
+which can save you on costs compared to normal instance prices. You can
+xref:../machine_management/creating_machinesets/creating-machineset-gcp.html#machineset-creating-non-guaranteed-instance_creating-machineset-gcp[configure preemptible VM instances]
+by adding the `Preemptible` field to the MachineSet YAML file.
 
 include::modules/cluster-autoscaler-about.adoc[leveloffset=+1]
 include::modules/cluster-autoscaler-cr.adoc[leveloffset=+2]
